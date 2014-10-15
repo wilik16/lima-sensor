@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Sensory</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_accelero_">Accelerometer</string>
+    <string name="title_activity_gravity_">Gravity_Activity</string>
+    <string name="title_activity_geo_magnetic_">GeoMagnetic_Activity</string>
+    <string name="title_activity_proximity_">Proximity</string>
+    <string name="title_activity_light_">Light</string>
+    <string name="title_activity_orientation_">Orientation</string>
+    <string name="accelerometer">Accelerometer</string>
+    <string name="magnetic_field">Magnetic Field</string>
+    <string name="proximity">Proximity</string>
+    <string name="light">Light</string>
+    <string name="orientation">Orientation</string>
+    <string name="daftar_sensor">Daftar Sensor</string>
+    <string name="simpan_ke_csv">Simpan ke CSV</string>
+    <string name="title_activity_gyroscope_">Gyroscope</string>
+    <string name="gyroscope">Gyroscope</string>
+</resources>
