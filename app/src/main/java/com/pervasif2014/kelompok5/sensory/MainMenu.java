@@ -2,15 +2,23 @@ package com.pervasif2014.kelompok5.sensory;
 
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pervasif2014.kelompok6.sensory.R;
@@ -81,6 +89,11 @@ public class MainMenu extends Activity {
         MainMenu.this.startActivity(acc_intent);
     }
 
+    public void gps_activity(View view) {
+        Intent acc_intent = new Intent(MainMenu.this,GPS_Activity.class);
+        MainMenu.this.startActivity(acc_intent);
+    }
+
     public void view_sensor_list() {
         SensorManager sensorM = (SensorManager) getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = sensorM.getSensorList(Sensor.TYPE_ALL);
@@ -91,6 +104,16 @@ public class MainMenu extends Activity {
             temp = "\n- " + sensor.getName() + " by " + sensor.getVendor();
             stringBuilder.append(temp);
         }
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        List<String> providers = locationManager.getAllProviders();
+
+        if (providers.contains(LocationManager.GPS_PROVIDER)) {
+            stringBuilder.append("\n- GPS Sensor");
+        } else {
+            Log.d("TAG", "Tidak ada GPS");
+        }
+
         sensorListDialog dialog = new sensorListDialog();
         Bundle args = new Bundle();
         args.putString("data",stringBuilder.toString());

@@ -3,6 +3,10 @@
     package="com.pervasif2014.kelompok6.sensory" >
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name="com.pervasif2014.kelompok5.sensory.sensory"
@@ -42,6 +46,10 @@
         <activity
             android:name="com.pervasif2014.kelompok5.sensory.Gyroscope_Activity"
             android:label="@string/title_activity_gyroscope_" >
+        </activity>
+        <activity
+            android:name="com.pervasif2014.kelompok5.sensory.GPS_Activity"
+            android:label="@string/title_activity_gps_" >
         </activity>
     </application>
 

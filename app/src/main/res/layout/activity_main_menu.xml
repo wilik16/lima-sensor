@@ -54,4 +54,14 @@
             android:background="?android:attr/selectableItemBackground"
             android:onClick="gyroscope_activity"/>
     </TableRow>
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp">
+        <Button
+            android:text="@string/GPS"
+            android:drawableTop="@drawable/icon_orientation"
+            android:background="?android:attr/selectableItemBackground"
+            android:onClick="gps_activity"/>
+    </TableRow>
 </TableLayout>

@@ -19,4 +19,7 @@
     <string name="simpan_ke_csv">Simpan ke CSV</string>
     <string name="title_activity_gyroscope_">Gyroscope</string>
     <string name="gyroscope">Gyroscope</string>
+    <string name="GPS">GPS</string>
+    <string name="title_activity_gps_">GPS_Activity</string>
+
 </resources>
