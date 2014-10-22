@@ -12,14 +12,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
 import com.pervasif2014.kelompok6.sensory.R;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+import weka.core.Instance;
 
 public class Accelero_Activity extends Activity implements SensorEventListener {
 
     private SensorManager sensorM;
     private String sensor_data="";
     private boolean record_data;
+    private List<Float> xdata = new ArrayList<Float>();
+    private List<Float> ydata  = new ArrayList<Float>();
+    private List<Float> zdata = new ArrayList<Float>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +39,7 @@ public class Accelero_Activity extends Activity implements SensorEventListener {
         Sensor sensor = sensorM.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         TextView sensor_name = (TextView) findViewById(R.id.acc_name);
         sensor_name.setText(sensor.getName() + " by " + sensor.getVendor());
+        sensor_data+="X,Y,Z\n";
     }
 
     @Override
@@ -51,7 +60,9 @@ public class Accelero_Activity extends Activity implements SensorEventListener {
             z = event.values[2] - gravityV[2];
             if(record_data)
             {
-                sensor_data += x + "," + y + "," + z + "\n";
+                xdata.add(x);
+                ydata.add(y);
+                zdata.add(z);
             }
 
             TextView xlabel = (TextView) findViewById(R.id.X_text);
@@ -73,8 +84,35 @@ public class Accelero_Activity extends Activity implements SensorEventListener {
             record_data=false;
             Button csv_btn = (Button)findViewById(R.id.save_csv_btn);
             csv_btn.setText("Simpan ke CSV");
+            for(int i =0;i<xdata.size();i+=10)
+            {
+                float tempx=0;
+                float tempy=0;
+                float tempz=0;
+                if(xdata.size()-i >=20)
+                    for(int j =i;j<i+20;j++)
+                    {
+                        tempx= tempx + xdata.get(j);
+                        tempy= tempy + ydata.get(j);
+                        tempz= tempz + zdata.get(j);
+
+                    }
+                else
+                    for(int j =i;j<xdata.size();j++)
+                    {
+                        tempx= tempx + xdata.get(j);
+                        tempy= tempy + ydata.get(j);
+                        tempz= tempz + zdata.get(j);
+
+                    }
+                tempx /=10;
+                tempy/=10;
+                tempz/=10;
+                sensor_data+=tempx+","+tempy+","+tempz+"\n";
+
+            }
             MainMenu.write_csv("accelerometer.csv", sensor_data);
-            sensor_data = "";
+            sensor_data = "X,Y,Z\n";
         }
     }
 
