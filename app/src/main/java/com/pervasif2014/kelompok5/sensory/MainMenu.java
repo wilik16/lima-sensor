@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.Criteria;
@@ -25,6 +26,8 @@ import com.pervasif2014.kelompok6.sensory.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +39,8 @@ public class MainMenu extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
         fm = getFragmentManager();
+
+
     }
 
     public static void write_csv(String filename,String data) {
