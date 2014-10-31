@@ -107,11 +107,22 @@ public class Accelero_Activity extends Activity implements SensorEventListener {
 
             if(status == 0.0)
             {
+                statuslabel.setText("Status : Berjalan");
+
+            }
+            else if (status==1.0)
+            {
                 statuslabel.setText("Status : Berdiri");
 
             }
-            else {
+            else if (status==2.0)
+            {
                 statuslabel.setText("Status : Berlari");
+
+            }
+            else if (status==3.0)
+            {
+                statuslabel.setText("Status : Duduk");
 
             }
         }
