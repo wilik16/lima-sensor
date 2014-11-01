@@ -51,6 +51,10 @@
             android:name="com.pervasif2014.kelompok5.sensory.GPS_Activity"
             android:label="@string/title_activity_gps_" >
         </activity>
+        <activity
+            android:name="com.pervasif2014.kelompok5.sensory.Detect_Activity"
+            android:label="@string/title_activity_detect_" >
+        </activity>
     </application>
 
 </manifest>

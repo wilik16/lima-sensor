@@ -62,13 +62,20 @@ public class KNN {
         return inputReader;
     }
 
-    public double Classify(double x , double y , double z) throws Exception {
-        Instance test = new Instance(4);
+    public double Classify(double Ax , double Ay , double Az , double Gx ,
+                           double Gy , double Gz , double Lx ,  double Ly , double Lz) throws Exception {
+        Instance test = new Instance(10);
         test.setDataset(Data);
-        test.setValue(0, x);
-        test.setValue(1, y);
-        test.setValue(2, z);
-        test.setValue(3, 0.0);
+        test.setValue(0, Ax);
+        test.setValue(1, Ay);
+        test.setValue(2, Az);
+        test.setValue(3, Gx);
+        test.setValue(4, Gy);
+        test.setValue(5, Gz);
+        test.setValue(6, Lx);
+        test.setValue(7, Ly);
+        test.setValue(8, Lz);
+        test.setValue(9, 0.0);
 
 
         double kelas = ibk.classifyInstance(test);

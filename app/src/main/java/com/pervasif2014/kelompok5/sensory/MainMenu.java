@@ -65,7 +65,7 @@ public class MainMenu extends Activity {
     }
 
     public void accelerometer_activity(View view) {
-        Intent acc_intent = new Intent(MainMenu.this,Accelero_Activity.class);
+        Intent acc_intent = new Intent(MainMenu.this,Detect_Activity.class);
         MainMenu.this.startActivity(acc_intent);
     }
 

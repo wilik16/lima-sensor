@@ -21,5 +21,6 @@
     <string name="gyroscope">Gyroscope</string>
     <string name="GPS">GPS</string>
     <string name="title_activity_gps_">GPS_Activity</string>
+    <string name="title_activity_detect_">Detect_Activity</string>
 
 </resources>

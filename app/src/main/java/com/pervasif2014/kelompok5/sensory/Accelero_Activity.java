@@ -98,7 +98,6 @@ public class Accelero_Activity extends Activity implements SensorEventListener {
             zlabel.setText("Z Axis: " + String.format("%.02f",z) + " m/s");
             double status = 0.0;
             try {
-                status = knn.Classify(x,y,z);
             } catch (Exception e) {
                 e.printStackTrace();
             }
