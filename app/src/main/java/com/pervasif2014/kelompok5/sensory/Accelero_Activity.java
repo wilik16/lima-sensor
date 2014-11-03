@@ -13,24 +13,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.pervasif2014.kelompok6.sensory.R;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-
-import weka.classifiers.Classifier;
-import weka.classifiers.lazy.IBk;
-import weka.core.Instance;
-import weka.core.Instances;
 
 public class Accelero_Activity extends Activity implements SensorEventListener {
 
@@ -57,7 +46,7 @@ public class Accelero_Activity extends Activity implements SensorEventListener {
         sensor_data+="X,Y,Z\n";
         InputStream is = null;
         try {
-            is = asm.open("input.arff");
+            is = asm.open("input_baru.arff");
         } catch (IOException e) {
             e.printStackTrace();
         }

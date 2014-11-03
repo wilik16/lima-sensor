@@ -16,10 +16,6 @@ import com.pervasif2014.kelompok6.sensory.R;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import weka.classifiers.trees.m5.Values;
 
 
 public class Detect_Activity extends Activity implements SensorEventListener{
@@ -28,8 +24,6 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     private  KNN knn = new KNN();
     private double xA=0,yA=0,zA=0,xG=0,yG=0,zG=0,xL=0,yL=0,zL=0;
     int counter = 0;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +34,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         Sensor sensor = sensorM.getDefaultSensor(Sensor.TYPE_ALL);
         InputStream is = null;
         try {
-            is = asm.open("input.arff");
+            is = asm.open("input_baru2.arff");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -49,7 +43,6 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -67,7 +60,6 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             xA+= event.values[0] - gravityV[0];
             yA+= event.values[1] - gravityV[1];
             zA+= event.values[2] - gravityV[2];
-
 
             TextView xlabel = (TextView) findViewById(R.id.AcX_text);
             xlabel.setText("X Axis: " + String.format("%.02f",event.values[0]) + " m/s");
@@ -90,17 +82,13 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             zlabel.setText("Z Axis: " + String.format("%.02f",event.values[2]) );
         }
 
-        if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)
-        {
+        if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             xL+=event.values[0];
             yL+=event.values[1];
             zL+=event.values[2];
-
         }
         counter++;
-        if(counter ==20)
-        {
-
+        if(counter ==20) {
             double status = 0.0;
             try {
                 status = knn.Classify(xA/20, yA/20, zA/20, xL/20, yL/20, zL/20,xG/20, yG/20, zG/20);
@@ -112,7 +100,6 @@ public class Detect_Activity extends Activity implements SensorEventListener{
 
             if (status == 0.0) {
                 statuslabel.setText("Status : Berjalan");
-
             } else if (status == 1.0) {
                 statuslabel.setText("Status : Berdiri");
 
@@ -121,15 +108,10 @@ public class Detect_Activity extends Activity implements SensorEventListener{
 
             } else if (status == 3.0) {
                 statuslabel.setText("Status : Duduk");
-
             }
             xA=0;yA=0;zA=0;xG=0;yG=0;zG=0;xL=0;yL=0;zL=0;
             counter=0;
-
         }
-
-
-
     }
 
     @Override
@@ -162,20 +144,13 @@ public class Detect_Activity extends Activity implements SensorEventListener{
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.detect_, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
     }
 }
