@@ -29,6 +29,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     private SensorManager sensorM;
     private  KNN knn = new KNN();
     private double xA=0,yA=0,zA=0,xG=0,yG=0,zG=0,xL=0,yL=0,zL=0;
+    int counter =0;
 
     Timer timer ;
     postDataTask task;
@@ -103,31 +104,44 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             yL+=event.values[1];
             zL+=event.values[2];
         }
-        double status = 0.0;
-        try {
-            status = knn.Classify(xA, yA, zA, xL, yL, zL,xG, yG, zG);
-        } catch (Exception e) {
-            e.printStackTrace();
+        counter++;
+        if (counter == 20)
+        {
+            double status = 0.0;
+            try {
+                status = knn.Classify(xA/20, yA/20, zA/20, xL/20, yL/20, zL/20, xG/20, yG/20, zG/20);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            TextView statuslabel = (TextView) findViewById(R.id.status_activity);
+
+            if (status == 0.0) {
+                activitas = "Berjalan";
+                statuslabel.setText("Status : Berjalan");
+            } else if (status == 1.0) {
+                activitas = "Berdiri";
+                statuslabel.setText("Status : Berdiri");
+
+            } else if (status == 2.0) {
+                activitas = "Berlari";
+                statuslabel.setText("Status : Berlari");
+
+            } else if (status == 3.0) {
+                activitas = "Duduk";
+                statuslabel.setText("Status : Duduk");
+            }
+            xA = 0;
+            yA = 0;
+            zA = 0;
+            xG = 0;
+            yG = 0;
+            zG = 0;
+            xL = 0;
+            yL = 0;
+            zL = 0;
+            counter=0;
         }
-
-        TextView statuslabel = (TextView) findViewById(R.id.status_activity);
-
-        if (status == 0.0) {
-            activitas="Berjalan";
-            statuslabel.setText("Status : Berjalan");
-        } else if (status == 1.0) {
-            activitas="Berdiri";
-            statuslabel.setText("Status : Berdiri");
-
-        } else if (status == 2.0) {
-            activitas="Berlari";
-            statuslabel.setText("Status : Berlari");
-
-        } else if (status == 3.0) {
-            activitas="Duduk";
-            statuslabel.setText("Status : Duduk");
-        }
-        xA=0;yA=0;zA=0;xG=0;yG=0;zG=0;xL=0;yL=0;zL=0;
 
     }
 
