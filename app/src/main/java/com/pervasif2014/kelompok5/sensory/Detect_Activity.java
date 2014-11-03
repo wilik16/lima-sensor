@@ -8,14 +8,20 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pervasif2014.kelompok6.sensory.R;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.xml.datatype.Duration;
 
 
 public class Detect_Activity extends Activity implements SensorEventListener{
@@ -23,7 +29,11 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     private SensorManager sensorM;
     private  KNN knn = new KNN();
     private double xA=0,yA=0,zA=0,xG=0,yG=0,zG=0,xL=0,yL=0,zL=0;
-    int counter = 0;
+
+    Timer timer ;
+    postDataTask task;
+    public String activitas="";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +53,17 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         } catch (Exception e) {
             e.printStackTrace();
         }
+        timer = new Timer();
+        task= new postDataTask();
+        timer.schedule(task,0,5000);
+
+
     }
 
     @Override
     public void onSensorChanged(SensorEvent event)
     {
+
         if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
         {
             final float alpha = 1.0f;
@@ -87,31 +103,32 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             yL+=event.values[1];
             zL+=event.values[2];
         }
-        counter++;
-        if(counter ==20) {
-            double status = 0.0;
-            try {
-                status = knn.Classify(xA/20, yA/20, zA/20, xL/20, yL/20, zL/20,xG/20, yG/20, zG/20);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            TextView statuslabel = (TextView) findViewById(R.id.status_activity);
-
-            if (status == 0.0) {
-                statuslabel.setText("Status : Berjalan");
-            } else if (status == 1.0) {
-                statuslabel.setText("Status : Berdiri");
-
-            } else if (status == 2.0) {
-                statuslabel.setText("Status : Berlari");
-
-            } else if (status == 3.0) {
-                statuslabel.setText("Status : Duduk");
-            }
-            xA=0;yA=0;zA=0;xG=0;yG=0;zG=0;xL=0;yL=0;zL=0;
-            counter=0;
+        double status = 0.0;
+        try {
+            status = knn.Classify(xA, yA, zA, xL, yL, zL,xG, yG, zG);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        TextView statuslabel = (TextView) findViewById(R.id.status_activity);
+
+        if (status == 0.0) {
+            activitas="Berjalan";
+            statuslabel.setText("Status : Berjalan");
+        } else if (status == 1.0) {
+            activitas="Berdiri";
+            statuslabel.setText("Status : Berdiri");
+
+        } else if (status == 2.0) {
+            activitas="Berlari";
+            statuslabel.setText("Status : Berlari");
+
+        } else if (status == 3.0) {
+            activitas="Duduk";
+            statuslabel.setText("Status : Duduk");
+        }
+        xA=0;yA=0;zA=0;xG=0;yG=0;zG=0;xL=0;yL=0;zL=0;
+
     }
 
     @Override
@@ -152,5 +169,16 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         return id == R.id.action_settings || super.onOptionsItemSelected(item);
+    }
+
+    class postDataTask extends TimerTask {
+
+        @Override
+        public void run() {
+           System.out.println(activitas);
+            //implement da post function here
+
+        }
+
     }
 }
