@@ -15,7 +15,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.pervasif2014.kelompok5.sensory.MainMenu"
+            android:name="com.pervasif2014.kelompok5.sensory.Detect_Activity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -52,7 +52,7 @@
             android:label="@string/title_activity_gps_" >
         </activity>
         <activity
-            android:name="com.pervasif2014.kelompok5.sensory.Detect_Activity"
+            android:name="com.pervasif2014.kelompok5.sensory.MainMenu"
             android:label="@string/title_activity_detect_" >
         </activity>
     </application>

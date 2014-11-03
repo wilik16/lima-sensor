@@ -1,28 +1,44 @@
 package com.pervasif2014.kelompok5.sensory;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.preference.PreferenceManager;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pervasif2014.kelompok6.sensory.R;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import javax.xml.datatype.Duration;
-
 
 public class Detect_Activity extends Activity implements SensorEventListener{
 
@@ -31,10 +47,20 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     private double xA=0,yA=0,zA=0,xG=0,yG=0,zG=0,xL=0,yL=0,zL=0;
     int counter =0;
 
-    Timer timer ;
+    Timer timer;
+    public static int WAKTU_KIRIM = 5000; //milisecond
     postDataTask task;
-    public String activitas="";
 
+    private static String URL = "http://192.168.43.237/sensor/add_marker.php";
+    private String text_response = "";
+    private String timestamp = "";
+    private String aktivitas = "Start";
+    private String nama = "";
+    private Location loc;
+    public double latitude = -7.27983, longitude = 112.79749, altitude = -20;
+
+    LocationManager locationManager, mlocManager;
+    LocationListener mlocListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +68,10 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         setContentView(R.layout.activity_detect_);
         AssetManager asm = getAssets();
         sensorM = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        Sensor sensor = sensorM.getDefaultSensor(Sensor.TYPE_ALL);
+        //Sensor sensor = sensorM.getDefaultSensor(Sensor.TYPE_ALL);
         InputStream is = null;
         try {
-            is = asm.open("input_baru2.arff");
+            is = asm.open("tes.arff");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -54,19 +80,61 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        timer = new Timer();
-        task= new postDataTask();
-        timer.schedule(task,0,5000);
 
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        String provider = locationManager.getBestProvider(new Criteria(), false);
+        loc = locationManager.getLastKnownLocation(provider);
 
+        mlocManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        mlocListener = new MyLocationListener();
+        mlocManager.requestLocationUpdates( LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
+
+        inputNama();
+    }
+
+    public void inputNama() {
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        nama = sharedPreferences.getString("nama", "");
+
+        String message = "";
+        if(nama.equals(""))
+            message = "Selamat datang!\nMasukkan nama Anda";
+        else
+            message = "Nama sebelumnya : " + nama + "\nNama nya bisa diganti kok :)";
+
+        final EditText input = new EditText(this);
+        input.setHint("Masukkan nama Anda");
+        input.setInputType(96); // TYPE_TEXT_VARIATION_PERSON_NAME
+        input.setText(nama);
+
+        new AlertDialog.Builder(Detect_Activity.this)
+                .setTitle("Hello")
+                .setMessage(message)
+                .setView(input)
+                .setPositiveButton("Oke", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        if(input.getText().toString().trim().isEmpty()) {
+                            inputNama();
+                        }
+                        else {
+                            nama = input.getText().toString().trim();
+                            sharedPreferences.edit().putString("nama",nama).apply();
+                            timer = new Timer();
+                            task = new postDataTask();
+                            timer.schedule(task,0,WAKTU_KIRIM);
+                        }
+                    }
+                }).setNegativeButton("Keluar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        locationManager.removeUpdates(mlocListener);
+                        finish();
+                    }
+                }).setCancelable(false).show();
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event)
-    {
-
-        if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
-        {
+    public void onSensorChanged(SensorEvent event) {
+        if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             final float alpha = 1.0f;
             //gravity is calculated here
             float[] gravityV = new float[3];
@@ -85,9 +153,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             TextView zlabel = (TextView) findViewById(R.id.AcZ_Text);
             zlabel.setText("Z Axis: " + String.format("%.02f",event.values[2]) + " m/s");
         }
-
-        if(event.sensor.getType() == Sensor.TYPE_GYROSCOPE)
-        {
+        if(event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             xG+=event.values[0];
             yG+=event.values[1];
             zG+=event.values[2];
@@ -117,18 +183,18 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             TextView statuslabel = (TextView) findViewById(R.id.status_activity);
 
             if (status == 0.0) {
-                activitas = "Berjalan";
+                aktivitas = "Berjalan";
                 statuslabel.setText("Status : Berjalan");
             } else if (status == 1.0) {
-                activitas = "Berdiri";
+                aktivitas = "Berdiri";
                 statuslabel.setText("Status : Berdiri");
 
             } else if (status == 2.0) {
-                activitas = "Berlari";
+                aktivitas = "Berlari";
                 statuslabel.setText("Status : Berlari");
 
             } else if (status == 3.0) {
-                activitas = "Duduk";
+                aktivitas = "Duduk";
                 statuslabel.setText("Status : Duduk");
             }
             xA = 0;
@@ -142,7 +208,6 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             zL = 0;
             counter=0;
         }
-
     }
 
     @Override
@@ -169,30 +234,132 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     protected void onPause() {
         // unregister listener
         super.onPause();
-        sensorM.unregisterListener(this);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.detect_, menu);
-        return true;
+        //sensorM.unregisterListener(this);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        return id == R.id.action_settings || super.onOptionsItemSelected(item);
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setTitle("Keluar?")
+                .setMessage("Keluar dari aplikasi?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        timer.cancel();
+                        timer.purge();
+                        locationManager.removeUpdates(mlocListener);
+                        finish();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // kosong
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 
     class postDataTask extends TimerTask {
 
         @Override
         public void run() {
-           System.out.println(activitas);
+            //System.out.println(aktivitas);
             //implement da post function here
 
+            timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            latitude = loc.getLatitude();
+            longitude = loc.getLongitude();
+            altitude = loc.getAltitude();
+            try {
+                postData(URL);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void postData(String url) throws JSONException {
+        // Create a new HttpClient and Post Header
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpPost httppost = new HttpPost(url);
+        JSONObject json = new JSONObject();
+
+        try {
+            // JSON data:
+            json.put("timestamp", timestamp);
+            json.put("nama", nama);
+            json.put("aktivitas", aktivitas);
+            json.put("latitude", latitude);
+            json.put("longitude", longitude);
+            json.put("altitude", altitude);
+
+            JSONArray postjson=new JSONArray();
+            postjson.put(json);
+
+            // Post the data:
+            httppost.setHeader("json",json.toString());
+            httppost.getParams().setParameter("jsonpost",postjson);
+
+            // Execute HTTP Post Request
+            //System.out.print(json);
+            HttpResponse response = httpclient.execute(httppost);
+
+            // for JSON:
+            if(response != null)
+            {
+                InputStream is = response.getEntity().getContent();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                StringBuilder sb = new StringBuilder();
+
+                String line;
+                try {
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                        sb.append("\n");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                text_response = sb.toString();
+            }
+
+        }catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+        }
+    }
+
+    public class MyLocationListener implements LocationListener {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            loc = location;
         }
 
+        @Override
+        public void onProviderDisabled(String provider) {
+            Toast.makeText(getApplicationContext(), "GPS Disabled", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            Toast.makeText( getApplicationContext(),"GPS Enabled",Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
     }
+
+    /*  REFERENCES
+     *  http://stackoverflow.com/questions/4597690/android-timer-how
+     */
 }
