@@ -46,7 +46,7 @@ public class Accelero_Activity extends Activity implements SensorEventListener {
         sensor_data+="X,Y,Z\n";
         InputStream is = null;
         try {
-            is = asm.open("input_baru.arff");
+            is = asm.open("input3.arff");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -80,7 +80,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         //Sensor sensor = sensorM.getDefaultSensor(Sensor.TYPE_ALL);
         InputStream is = null;
         try {
-            is = asm.open("tes.arff");
+            is = asm.open("input3.arff");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -198,19 +198,11 @@ public class Detect_Activity extends Activity implements SensorEventListener{
                 e.printStackTrace();
             }
 
-            if (status == 0.0) {
-                aktivitas = "Berjalan";
-                statuslabel.setText("Status : Berjalan");
-                gambar.setImageResource(R.drawable.walk);
 
-            } else if (status == 1.0) {
+             if (status == 1.0) {
                 aktivitas = "Berdiri";
                 statuslabel.setText("Status : Berdiri");
                 gambar.setImageResource(R.drawable.stand);
-
-            } else if (status == 2.0) {
-                aktivitas = "Berlari";
-                statuslabel.setText("Status : Berlari");
 
             } else if (status == 3.0) {
                 aktivitas = "Duduk";
@@ -218,6 +210,11 @@ public class Detect_Activity extends Activity implements SensorEventListener{
                 gambar.setImageResource(R.drawable.sit);
 
             }
+            else {
+                aktivitas = "Berjalan";
+                statuslabel.setText("Status : Berjalan");
+                gambar.setImageResource(R.drawable.walk);}
+
             xA = 0;
             yA = 0;
             zA = 0;
