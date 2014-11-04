@@ -16,11 +16,15 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.pervasif2014.kelompok6.sensory.R;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -30,6 +34,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.pervasif2014.kelompok6.sensory.R;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,10 +52,13 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     private  KNN knn = new KNN();
     private double xA=0,yA=0,zA=0,xG=0,yG=0,zG=0,xL=0,yL=0,zL=0;
     int counter =0;
+    boolean ad = true;
 
     Timer timer;
     public static int WAKTU_KIRIM = 5000; //milisecond
     postDataTask task;
+    TextView statuslabel;
+    ImageView gambar;
 
     private static String URL = "http://192.168.43.237/sensor/add_marker.php";
     private String text_response = "";
@@ -80,6 +89,9 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        statuslabel = (TextView) findViewById(R.id.status_activity);
+        gambar = (ImageView) findViewById (R.id.gambar);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         String provider = locationManager.getBestProvider(new Criteria(), false);
@@ -123,13 +135,17 @@ public class Detect_Activity extends Activity implements SensorEventListener{
                             task = new postDataTask();
                             timer.schedule(task,0,WAKTU_KIRIM);
                         }
+                        TextView name = (TextView) findViewById(R.id.name);
+                        name.setText(nama);
+
                     }
                 }).setNegativeButton("Keluar", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        locationManager.removeUpdates(mlocListener);
-                        finish();
-                    }
-                }).setCancelable(false).show();
+            public void onClick(DialogInterface dialog, int whichButton) {
+                locationManager.removeUpdates(mlocListener);
+                finish();
+            }
+        }).setCancelable(false).show();
+
     }
 
     @Override
@@ -146,23 +162,23 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             yA+= event.values[1] - gravityV[1];
             zA+= event.values[2] - gravityV[2];
 
-            TextView xlabel = (TextView) findViewById(R.id.AcX_text);
-            xlabel.setText("X Axis: " + String.format("%.02f",event.values[0]) + " m/s");
-            TextView ylabel = (TextView) findViewById(R.id.AcY_Text);
-            ylabel.setText("Y Axis: " + String.format("%.02f",event.values[1]) + " m/s");
-            TextView zlabel = (TextView) findViewById(R.id.AcZ_Text);
-            zlabel.setText("Z Axis: " + String.format("%.02f",event.values[2]) + " m/s");
+            // TextView xlabel = (TextView) findViewById(R.id.AcX_text);
+            //  xlabel.setText("X Axis: " + String.format("%.02f",event.values[0]) + " m/s");
+            //  TextView ylabel = (TextView) findViewById(R.id.AcY_Text);
+            // ylabel.setText("Y Axis: " + String.format("%.02f",event.values[1]) + " m/s");
+            //  TextView zlabel = (TextView) findViewById(R.id.AcZ_Text);
+            //  zlabel.setText("Z Axis: " + String.format("%.02f",event.values[2]) + " m/s");
         }
         if(event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             xG+=event.values[0];
             yG+=event.values[1];
             zG+=event.values[2];
-            TextView xlabel = (TextView) findViewById(R.id.GyX_Text);
-            xlabel.setText("X Axis: " + String.format("%.02f",event.values[0]) );
-            TextView ylabel = (TextView) findViewById(R.id.GyY_Text);
-            ylabel.setText("Y Axis: " + String.format("%.02f",event.values[1]) );
-            TextView zlabel = (TextView) findViewById(R.id.GyZ_Text);
-            zlabel.setText("Z Axis: " + String.format("%.02f",event.values[2]) );
+            //  TextView xlabel = (TextView) findViewById(R.id.GyX_Text);
+            //  xlabel.setText("X Axis: " + String.format("%.02f",event.values[0]) );
+            //  TextView ylabel = (TextView) findViewById(R.id.GyY_Text);
+            //  ylabel.setText("Y Axis: " + String.format("%.02f",event.values[1]) );
+            //  TextView zlabel = (TextView) findViewById(R.id.GyZ_Text);
+            //  zlabel.setText("Z Axis: " + String.format("%.02f",event.values[2]) );
         }
 
         if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
@@ -171,6 +187,8 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             zL+=event.values[2];
         }
         counter++;
+
+
         if (counter == 20)
         {
             double status = 0.0;
@@ -180,14 +198,15 @@ public class Detect_Activity extends Activity implements SensorEventListener{
                 e.printStackTrace();
             }
 
-            TextView statuslabel = (TextView) findViewById(R.id.status_activity);
-
             if (status == 0.0) {
                 aktivitas = "Berjalan";
                 statuslabel.setText("Status : Berjalan");
+                gambar.setImageResource(R.drawable.walk);
+
             } else if (status == 1.0) {
                 aktivitas = "Berdiri";
                 statuslabel.setText("Status : Berdiri");
+                gambar.setImageResource(R.drawable.stand);
 
             } else if (status == 2.0) {
                 aktivitas = "Berlari";
@@ -196,6 +215,8 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             } else if (status == 3.0) {
                 aktivitas = "Duduk";
                 statuslabel.setText("Status : Duduk");
+                gambar.setImageResource(R.drawable.sit);
+
             }
             xA = 0;
             yA = 0;
@@ -208,6 +229,31 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             zL = 0;
             counter=0;
         }
+
+        final Button start = (Button) findViewById(R.id.start);
+        start.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String ButtonText = start.getText().toString();
+                // TODO Auto-generated method stub
+                if(ButtonText.equals("Start"))
+                {
+                    statuslabel.setVisibility(View.VISIBLE);
+                    gambar.setVisibility(View.VISIBLE);
+                    start.setText("Stop");
+                    ad = false;
+                }
+                else if (ButtonText.equals("Stop"))
+                {
+                    timer.cancel();
+                    timer.purge();
+                    start.setText("Start");
+                    statuslabel.setVisibility(View.INVISIBLE);
+                    gambar.setVisibility(View.INVISIBLE);
+
+                }
+            }
+        });
     }
 
     @Override
@@ -236,6 +282,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         super.onPause();
         //sensorM.unregisterListener(this);
     }
+
 
     @Override
     public void onBackPressed() {
@@ -342,6 +389,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         @Override
         public void onLocationChanged(Location location) {
             loc = location;
+            //Log.e("loc",loc.getLatitude()+"");
         }
 
         @Override
