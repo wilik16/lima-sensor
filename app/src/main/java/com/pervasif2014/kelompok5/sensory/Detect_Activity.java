@@ -15,16 +15,18 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -52,7 +54,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     private  KNN knn = new KNN();
     private double xA=0,yA=0,zA=0,xG=0,yG=0,zG=0,xL=0,yL=0,zL=0;
     int counter =0;
-    boolean ad = true;
+    boolean stop = true;
 
     Timer timer;
     public static int WAKTU_KIRIM = 5000; //milisecond
@@ -60,7 +62,8 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     TextView statuslabel;
     ImageView gambar;
 
-    private static String URL = "http://192.168.43.237/sensor/add_marker.php";
+    private static String URL = "http://sensor.shiinoandra.com/add_marker.php";
+    //private static String URL = "http://192.168.43.237/sensor/add_marker.php";
     private String text_response = "";
     private String timestamp = "";
     private String aktivitas = "Start";
@@ -70,6 +73,8 @@ public class Detect_Activity extends Activity implements SensorEventListener{
 
     LocationManager locationManager, mlocManager;
     LocationListener mlocListener;
+
+    Chronometer chronometer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +99,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
 
         statuslabel = (TextView) findViewById(R.id.status_activity);
         gambar = (ImageView) findViewById (R.id.gambar);
+        chronometer = (Chronometer) findViewById(R.id.chronometer);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         String provider = locationManager.getBestProvider(new Criteria(), false);
@@ -133,20 +139,18 @@ public class Detect_Activity extends Activity implements SensorEventListener{
                         else {
                             nama = input.getText().toString().trim();
                             sharedPreferences.edit().putString("nama",nama).apply();
-                            timer = new Timer();
-                            task = new postDataTask();
-                            timer.schedule(task,0,WAKTU_KIRIM);
                         }
                         TextView name = (TextView) findViewById(R.id.name);
-                        name.setText(nama);
+                        name.setText("Nama : " + nama);
+                        statuslabel.setText("Klik 'Start' untuk mulai, back untuk keluar");
 
                     }
                 }).setNegativeButton("Keluar", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                locationManager.removeUpdates(mlocListener);
-                finish();
-            }
-        }).setCancelable(false).show();
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        locationManager.removeUpdates(mlocListener);
+                        finish();
+                    }
+                }).setCancelable(false).show();
 
     }
 
@@ -200,22 +204,22 @@ public class Detect_Activity extends Activity implements SensorEventListener{
                 e.printStackTrace();
             }
 
-
-             if (status == 1.0) {
+            if (status == 1.0) {
                 aktivitas = "Berdiri";
-                statuslabel.setText("Status : Berdiri");
+                if (!stop)
+                    statuslabel.setText("Berdiri");
                 gambar.setImageResource(R.drawable.stand);
-
             } else if (status == 3.0) {
                 aktivitas = "Duduk";
-                statuslabel.setText("Status : Duduk");
+                if (!stop)
+                    statuslabel.setText("Duduk");
                 gambar.setImageResource(R.drawable.sit);
-
-            }
-            else {
+            } else {
                 aktivitas = "Berjalan";
-                statuslabel.setText("Status : Berjalan");
-                gambar.setImageResource(R.drawable.walk);}
+                if (!stop)
+                    statuslabel.setText("Berjalan");
+                gambar.setImageResource(R.drawable.walk);
+            }
 
             xA = 0;
             yA = 0;
@@ -234,22 +238,35 @@ public class Detect_Activity extends Activity implements SensorEventListener{
             @Override
             public void onClick(View v) {
                 String ButtonText = start.getText().toString();
-                // TODO Auto-generated method stub
-                if(ButtonText.equals("Start"))
-                {
+
+                if(ButtonText.equals("<< Start >>")) {
+                    stop = false;
+
+                    chronometer.setBase(SystemClock.elapsedRealtime());
+                    chronometer.start();
+                    chronometer.setVisibility(View.VISIBLE);
+
+                    timer = new Timer();
+                    task = new postDataTask();
+                    timer.schedule(task,0,WAKTU_KIRIM);
+
+                    statuslabel.setText(aktivitas);
                     statuslabel.setVisibility(View.VISIBLE);
                     gambar.setVisibility(View.VISIBLE);
-                    start.setText("Stop");
-                    ad = false;
+                    start.setText(">> Stop <<");
                 }
-                else if (ButtonText.equals("Stop"))
+                else if (ButtonText.equals(">> Stop <<"))
                 {
+                    stop = true;
+
+                    chronometer.stop();
+                    chronometer.setVisibility(View.INVISIBLE);
+
                     timer.cancel();
                     timer.purge();
-                    start.setText("Start");
-                    statuslabel.setVisibility(View.INVISIBLE);
+                    start.setText("<< Start >>");
+                    statuslabel.setText("Klik 'Start' untuk mulai, back untuk keluar");
                     gambar.setVisibility(View.INVISIBLE);
-
                 }
             }
         });
@@ -290,8 +307,10 @@ public class Detect_Activity extends Activity implements SensorEventListener{
                 .setMessage("Keluar dari aplikasi?")
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        timer.cancel();
-                        timer.purge();
+                        if(!stop) {
+                            timer.cancel();
+                            timer.purge();
+                        }
                         locationManager.removeUpdates(mlocListener);
                         finish();
                     }
@@ -388,7 +407,6 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         @Override
         public void onLocationChanged(Location location) {
             loc = location;
-            //Log.e("loc",loc.getLatitude()+"");
         }
 
         @Override
