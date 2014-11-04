@@ -16,9 +16,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -74,7 +74,9 @@ public class Detect_Activity extends Activity implements SensorEventListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_detect_);
+
         AssetManager asm = getAssets();
         sensorM = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         //Sensor sensor = sensorM.getDefaultSensor(Sensor.TYPE_ALL);
@@ -108,7 +110,7 @@ public class Detect_Activity extends Activity implements SensorEventListener{
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         nama = sharedPreferences.getString("nama", "");
 
-        String message = "";
+        String message;
         if(nama.equals(""))
             message = "Selamat datang!\nMasukkan nama Anda";
         else
